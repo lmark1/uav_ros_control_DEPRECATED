@@ -49,10 +49,12 @@ target_link_libraries(carrot_reference_node reference_lib)
 # PID cascade node
 add_executable(pid_cascade_node nodes/control/PositionControlNode.cpp)
 target_link_libraries(pid_cascade_node control_lib)
+add_dependencies(pid_cascade_node ${catkin_EXPORTED_TARGETS})
 
 # Distance control node
 add_executable(distance_control_node nodes/control/DistanceControlNode.cpp)
 target_link_libraries(distance_control_node control_lib nfilt)
+add_dependencies(distance_control_node ${catkin_EXPORTED_TARGETS})
 
 # Geo-fencing node
 add_executable(geo_fence_node nodes/reference/GeoFenceNode.cpp)
