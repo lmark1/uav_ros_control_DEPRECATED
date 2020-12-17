@@ -18,7 +18,8 @@ catkin_package(
   uav_ros_control_msgs
   mavros)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${GeographicLib_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${GeographicLib_INCLUDE_DIRS}
+                    ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 
 # PID controller library
 add_library(uav_pid src/control/PID.cpp)
@@ -49,12 +50,12 @@ target_link_libraries(carrot_reference_node reference_lib)
 # PID cascade node
 add_executable(pid_cascade_node nodes/control/PositionControlNode.cpp)
 target_link_libraries(pid_cascade_node control_lib)
-add_dependencies(pid_cascade_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(pid_cascade_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 # Distance control node
 add_executable(distance_control_node nodes/control/DistanceControlNode.cpp)
 target_link_libraries(distance_control_node control_lib nfilt)
-add_dependencies(distance_control_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(distance_control_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 # Geo-fencing node
 add_executable(geo_fence_node nodes/reference/GeoFenceNode.cpp)
