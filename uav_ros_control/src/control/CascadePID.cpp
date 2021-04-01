@@ -32,8 +32,7 @@ uav_controller::CascadePID::CascadePID(ros::NodeHandle &nh)
   : _posXPID{ new PID("Position - x") }, _posYPID{ new PID("Position - y") },
     _posZPID{ new PID("Position - z") }, _velXPID{ new PID("Velocity - x") },
     _velYPID{ new PID("Velocity - y") }, _velZPID{ new PID("Velocity - z") },
-    _yawRatePID{ new PID("Yaw rate") },
-    uav_controller::ControlBase(nh)
+    _yawRatePID{ new PID("Yaw rate") }, uav_controller::ControlBase(nh)
 {
   // Initialize class parameters
   initializeParameters(nh);
@@ -302,7 +301,27 @@ double uav_controller::CascadePID::calculateYawRateSetpoint(double dt)
 }
 
 void uav_controller::runDefault(uav_controller::CascadePID &cascadeObj,
-  ros::NodeHandle & /* unused */)
+  ros::NodeHandle &nh)
+{
+  double rate = 50;
+  double dt = 1.0 / rate;
+  ros::Rate loopRate(rate);
+
+  while (ros::ok()) {
+    ros::spinOnce();
+    if (cascadeObj.activationPermission()) {
+      cascadeObj.calculateAttThrustSp(dt);
+      cascadeObj.publishAttitudeTarget(MASK_IGNORE_RPY_RATE);
+    } else {
+      ROS_FATAL_THROTTLE(2, "CascadePID::runDefault - controller inactive");
+    }
+    cascadeObj.publishEulerSp();
+    loopRate.sleep();
+  }
+}
+
+void uav_controller::runDefault_yawrate(uav_controller::CascadePID &cascadeObj,
+  ros::NodeHandle &nh)
 {
   double rate = 50;
   double dt = 1.0 / rate;
