@@ -234,7 +234,7 @@ void uav_controller::CascadePID::resetVelocityPID()
   _velZPID->resetIntegrator();
 }
 
-void uav_controller::CascadePID::calculateAttThrustSp(double dt)
+void uav_controller::CascadePID::calculateAttThrustSp(double dt, bool yaw_rate_control)
 {
   // Calculate first row of PID controllers
   double velocityRefX = _posXPID->compute(
@@ -263,10 +263,15 @@ void uav_controller::CascadePID::calculateAttThrustSp(double dt)
   _yawRef += _ffGainAccelerationZ * getCurrentReference().accelerations[0].linear.z
              / GRAVITY_ACCELERATION;
 
-  // Decouple roll and pitch w.r.t. yaw
-  setAttitudeSp(cos(getCurrentYaw()) * roll + sin(getCurrentYaw()) * pitch,
-    cos(getCurrentYaw()) * pitch - sin(getCurrentYaw()) * roll,
-    _yawRef);
+  if (yaw_rate_control) {
+    // Don't decouple roll - pitch - publish it in ENU frame
+    setAttitudeSp(roll, pitch, 0);
+  } else {
+    // Decouple roll and pitch w.r.t. yaw - publish it in UAV body frame
+    setAttitudeSp(cos(getCurrentYaw()) * roll + sin(getCurrentYaw()) * pitch,
+      cos(getCurrentYaw()) * pitch - sin(getCurrentYaw()) * roll,
+      _yawRef);
+  }
 
   setThrustSp(thrust);
 
@@ -337,6 +342,24 @@ void uav_controller::runDefault_yawrate(uav_controller::CascadePID &cascadeObj,
     } else {
       ROS_FATAL_THROTTLE(2, "CascadePID::runDefault - controller inactive");
     }
+    cascadeObj.publishEulerSp();
+    loopRate.sleep();
+  }
+}
+
+void uav_controller::runDefault_yawrate_px4(uav_controller::CascadePID &cascadeObj,
+  ros::NodeHandle &nh)
+{
+  double rate = 50;
+  double dt = 1.0 / rate;
+  ros::Rate loopRate(rate);
+  bool yaw_rate_control_enabled = true;
+
+  while (ros::ok()) {
+    ros::spinOnce();
+    cascadeObj.calculateAttThrustSp(dt, yaw_rate_control_enabled);
+    const auto yawRateSetpoint = cascadeObj.calculateYawRateSetpoint(dt);
+    cascadeObj.publishAttitudeTarget(MASK_IGNORE_RP_RATE, yawRateSetpoint);
     cascadeObj.publishEulerSp();
     loopRate.sleep();
   }
