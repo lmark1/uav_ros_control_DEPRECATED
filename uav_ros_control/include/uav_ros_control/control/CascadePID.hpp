@@ -32,7 +32,8 @@ public:
    * Calculate new attitude and thrust setpoint.
    *
    * @param dt - Discretization time
-   * @param yaw_rate_control - If we are using yaw_rate_control do not transform attitude to body frame using current yaw angle
+   * @param yaw_rate_control - If we are using yaw_rate_control do not transform attitude
+   * to body frame using current yaw angle
    */
   void calculateAttThrustSp(double dt, bool yaw_rate_control = false);
   bool activationPermission();
@@ -143,6 +144,7 @@ private:
 /**
  * @brief Default position control program for Ardupilot firmware
  * Uses roll, pitch, yaw, thrust Attitude Commands
+ * Roll and pitch are expressed in UAV body frame.
  */
 void runDefault(uav_controller::CascadePID &cc, ros::NodeHandle &nh);
 
@@ -155,11 +157,19 @@ void runDefault_yawrate(uav_controller::CascadePID &cc, ros::NodeHandle &nh);
 
 /**
  * @brief Default position control program for PX4 firmware
- * Uses roll, pitch, yawrate, thrust Attitude Commands
- * Roll and pitch are expressed in Odometry frame (That's ENU frame if using mavros/global_position/local)
+ * Uses roll, pitch, yaw, thrust Attitude Commands
+ * Roll and pitch are expressed in UAV body frame.
  */
-void runDefault_yawrate_px4(uav_controller::CascadePID &cascadeObj,
+void runDefault_px4(uav_controller::CascadePID &cascadeObj,
   ros::NodeHandle &nh);
+
+/**
+ * @brief Default position control program for PX4 firmware
+ * Uses roll, pitch, yawrate, thrust Attitude Commands
+ * Roll and pitch are expressed in Odometry frame (That's ENU frame if using
+ * mavros/global_position/local)
+ */
+void runDefault_yawrate_px4(uav_controller::CascadePID &cascadeObj, ros::NodeHandle &nh);
 
 }// namespace uav_controller
 

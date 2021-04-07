@@ -326,6 +326,23 @@ void uav_controller::runDefault(uav_controller::CascadePID &cascadeObj,
   }
 }
 
+void uav_controller::runDefault_px4(uav_controller::CascadePID &cascadeObj,
+  ros::NodeHandle &nh)
+{
+  double rate = 50;
+  double dt = 1.0 / rate;
+  ros::Rate loopRate(rate);
+  ROS_WARN_ONCE("[uav_controller::runDefault]: Control node for Ardupilot firmware is active!");
+
+  while (ros::ok()) {
+    ros::spinOnce();
+    cascadeObj.calculateAttThrustSp(dt);
+    cascadeObj.publishAttitudeTarget(MASK_IGNORE_RPY_RATE);
+    cascadeObj.publishEulerSp();
+    loopRate.sleep();
+  }
+}
+
 void uav_controller::runDefault_yawrate(uav_controller::CascadePID &cascadeObj,
   ros::NodeHandle &nh)
 {
