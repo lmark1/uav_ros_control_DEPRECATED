@@ -311,6 +311,7 @@ void uav_controller::runDefault(uav_controller::CascadePID &cascadeObj,
   double rate = 50;
   double dt = 1.0 / rate;
   ros::Rate loopRate(rate);
+  ROS_WARN_ONCE("[uav_controller::runDefault]: Control node for Ardupilot firmware is active!");
 
   while (ros::ok()) {
     ros::spinOnce();
@@ -331,6 +332,7 @@ void uav_controller::runDefault_yawrate(uav_controller::CascadePID &cascadeObj,
   double rate = 50;
   double dt = 1.0 / rate;
   ros::Rate loopRate(rate);
+  ROS_WARN_ONCE("[uav_controller::runDefault_yawrate]: Control node for Ardupilot firmware is active!");
 
   while (ros::ok()) {
     ros::spinOnce();
@@ -354,6 +356,7 @@ void uav_controller::runDefault_yawrate_px4(uav_controller::CascadePID &cascadeO
   double dt = 1.0 / rate;
   ros::Rate loopRate(rate);
   bool yaw_rate_control_enabled = true;
+  ROS_WARN_ONCE("[uav_controller::runDefault_yawrate_px4]: Control node for PX4 firmware is active!");
 
   while (ros::ok()) {
     ros::spinOnce();
